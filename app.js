@@ -83,18 +83,18 @@ bot.start(ctx => {
 
 // Главное меню
 bot.action('BACK_MAIN', async ctx => {
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, '📋 Главное меню:', mainMenu);
 });
 
 // --- Вишлист ---
 bot.action('WISHLIST_MENU', async ctx => {
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, '🎁 Общее меню вишлиста:', wishlistMenu);
 });
 bot.action('ADD_WISH', async ctx => {
   ctx.session.action = 'awaiting_text';
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, '✏️ Что добавить в общий вишлист?');
 });
 priorities.forEach(p => {
@@ -103,29 +103,29 @@ priorities.forEach(p => {
     addWish(text, p.label);
     ctx.session.tempWish = null;
     ctx.session.action = null;
-    ctx.answerCbQuery();
+    await ctx.answerCbQuery().catch(() => {});
     await safeEdit(ctx, `✅ Добавлено: ${p.label} — ${text}`, wishlistMenu);
   });
 });
 bot.action('VIEW_WISH', async ctx => {
   const list = data[STORAGE_KEY] || [];
   const msg = list.length
-    ? '📜 Общий вишлист:\n' + list.map((i, idx) => `${idx+1}. ${i.priority} — ${i.text}`).join('\n')
+    ? '📜 Общий вишлист:\n' + list.map((i, idx) => `${idx + 1}. ${i.priority} — ${i.text}`).join('\n')
     : '🏷️ Вишлист пуст.';
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, msg, wishlistMenu);
 });
 bot.action('START_REMOVE', async ctx => {
   const list = data[STORAGE_KEY] || [];
   if (!list.length) {
-    ctx.answerCbQuery();
+    await ctx.answerCbQuery().catch(() => {});
     return safeEdit(ctx, 'Пусто. Нечего удалять.', wishlistMenu);
   }
   const buttons = list.map((item, idx) =>
-    Markup.button.callback(`${idx+1}. ${item.priority} — ${item.text}`, `REMOVE_${idx}`)
+    Markup.button.callback(`${idx + 1}. ${item.priority} — ${item.text}`, `REMOVE_${idx}`)
   );
   buttons.push(Markup.button.callback('❌ Отмена', 'WISHLIST_MENU'));
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, 'Выбери пункт для удаления:', Markup.inlineKeyboard(buttons, { columns: 1 }));
 });
 bot.action(/REMOVE_(\d+)/, async ctx => {
@@ -133,32 +133,34 @@ bot.action(/REMOVE_(\d+)/, async ctx => {
   const list = data[STORAGE_KEY] || [];
   if (list[idx]) list.splice(idx, 1);
   saveData();
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, '🎁 Меню вишлиста:', wishlistMenu);
 });
 
 // --- Примирительные письма ---
 bot.action('LETTER_MENU', async ctx => {
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, '💌 Меню примирительных писем:', letterMenu);
 });
 
 bot.action('ADD_LETTER', async ctx => {
   ctx.session.action = 'awaiting_letter';
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await ctx.reply('✏️ Напиши своё примирительное письмо:');
 });
 
 // Список писем как кнопки
 bot.action('VIEW_LETTERS', async ctx => {
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   if (!letters.length) {
     return safeEdit(ctx, '📭 Писем пока нет.', letterMenu);
   }
-  const buttons = letters.map((l, i) => Markup.button.callback(
-    `${i+1}. от ${l.from} (${new Date(l.at).toLocaleDateString()})`,
-    `VIEW_LETTER_${i}`
-  ));
+  const buttons = letters.map((l, i) =>
+    Markup.button.callback(
+      `${i + 1}. от ${l.from} (${new Date(l.at).toLocaleDateString()})`,
+      `VIEW_LETTER_${i}`
+    )
+  );
   buttons.push(Markup.button.callback('🔙 Назад', 'LETTER_MENU'));
   await safeEdit(ctx, '📬 Выберите письмо:', Markup.inlineKeyboard(buttons, { columns: 1 }));
 });
@@ -167,7 +169,7 @@ bot.action('VIEW_LETTERS', async ctx => {
 bot.action(/VIEW_LETTER_(\d+)/, async ctx => {
   const idx = parseInt(ctx.match[1], 10);
   const l = letters[idx];
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   if (!l) return safeEdit(ctx, '❗️ Письмо не найдено.', letterMenu);
   const text = `✉️ Письмо от ${l.from} (${new Date(l.at).toLocaleString()}):\n\n${l.text}`;
   await safeEdit(ctx, text, letterMenu);
@@ -175,14 +177,13 @@ bot.action(/VIEW_LETTER_(\d+)/, async ctx => {
 
 // Меню удаления писем
 bot.action('DELETE_LETTERS_MENU', async ctx => {
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   if (!letters.length) {
     return safeEdit(ctx, '📭 Нет писем для удаления.', letterMenu);
   }
-  const buttons = letters.map((l, i) => Markup.button.callback(
-    `${i+1}. от ${l.from}`,
-    `DELETE_LETTER_${i}`
-  ));
+  const buttons = letters.map((l, i) =>
+    Markup.button.callback(`${i + 1}. от ${l.from}`, `DELETE_LETTER_${i}`)
+  );
   buttons.push(Markup.button.callback('❌ Отмена', 'LETTER_MENU'));
   await safeEdit(ctx, '🗑️ Выберите письмо для удаления:', Markup.inlineKeyboard(buttons, { columns: 1 }));
 });
@@ -192,7 +193,7 @@ bot.action(/DELETE_LETTER_(\d+)/, async ctx => {
   const idx = parseInt(ctx.match[1], 10);
   if (letters[idx]) letters.splice(idx, 1);
   saveLetters();
-  ctx.answerCbQuery();
+  await ctx.answerCbQuery().catch(() => {});
   await safeEdit(ctx, '✅ Письмо удалено.', letterMenu);
 });
 
@@ -201,15 +202,16 @@ bot.on('text', async ctx => {
   if (ctx.session.action === 'awaiting_text') {
     ctx.session.tempWish = ctx.message.text.trim();
     ctx.session.action = 'awaiting_priority';
-    const buttons = priorities.map(p => Markup.button.callback(p.label, `SET_PRIORITY_${p.id}`));
+    const buttons = priorities.map(p =>
+      Markup.button.callback(p.label, `SET_PRIORITY_${p.id}`)
+    );
     await ctx.reply('Выбери приоритет:', Markup.inlineKeyboard(buttons, { columns: 1 }));
-
   } else if (ctx.session.action === 'awaiting_letter') {
     const letterText = ctx.message.text.trim();
     letters.push({
       text: letterText,
       from: ctx.from.username || ctx.from.first_name,
-      at: new Date().toISOString()
+      at: new Date().toISOString(),
     });
     saveLetters();
     ctx.session.action = null;
