@@ -5,7 +5,7 @@ const { Telegraf, session, Markup } = require('telegraf');
 const fs = require('fs');
 const path = require('path');
 
-const BOT_TOKEN = '7314894047:AAETByK-D6_Gr_auXgzq-q7wrB1PRSNGUfc';
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const bot = new Telegraf(BOT_TOKEN);
 
 // Сессии
